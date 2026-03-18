@@ -158,11 +158,14 @@ export function Dashboard() {
                     <p className="text-sm text-gray-500">{order.id}</p>
                   </div>
                   <div className="ml-auto font-medium">{order.amount}</div>
-                  <div className="ml-4 w-20 text-right">
+                  <div className="ml-4 w-24 text-right">
                     <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
                       order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
                       order.status === 'Preparing' ? 'bg-yellow-100 text-yellow-700' :
-                      order.status === 'Ready' ? 'bg-blue-100 text-blue-700' :
+                      order.status === 'Ready' ? 'bg-indigo-100 text-indigo-700' :
+                      order.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
+                      order.status === 'Out for Delivery' ? 'bg-purple-100 text-purple-700' :
+                      order.status === 'Cancelled' ? 'bg-red-100 text-red-700' :
                       'bg-gray-100 text-gray-700'
                     }`}>
                       {order.status}

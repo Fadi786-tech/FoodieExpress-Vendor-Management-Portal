@@ -62,6 +62,17 @@ export function Settings() {
     }
   };
 
+  const handleResetData = async () => {
+    if (window.confirm("Are you sure you want to reset all data to default? This will delete all your products, staff, and settings.")) {
+      try {
+        await dataService.resetData();
+        window.location.reload();
+      } catch (error) {
+        console.error('Error resetting data:', error);
+      }
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setSettings(prev => ({ ...prev, [name]: value }));
@@ -220,6 +231,27 @@ export function Settings() {
               <div className="flex justify-end pt-4">
                 <Button variant="outline">
                   Update Password
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-100 bg-red-50/30">
+            <CardHeader>
+              <CardTitle className="text-red-600">Data Management</CardTitle>
+              <CardDescription>Reset your store data to its original state.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <p className="text-sm text-gray-600">
+                  This will delete all your products, staff, and settings and restore the default dummy data.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="text-red-600 border-red-200 hover:bg-red-50 shrink-0"
+                  onClick={handleResetData}
+                >
+                  Reset All Data
                 </Button>
               </div>
             </CardContent>

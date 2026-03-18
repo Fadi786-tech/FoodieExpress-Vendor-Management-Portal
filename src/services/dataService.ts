@@ -69,21 +69,41 @@ const STORAGE_KEY = 'foodie_express_db';
 
 const getDb = () => {
   if (typeof window === 'undefined') return initialData;
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored || stored === 'undefined' || stored === 'null' || stored === '{}') {
+      console.log('DataService: Initializing with default data');
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
+      return initialData;
+    }
+    const parsed = JSON.parse(stored);
+    // Ensure all keys exist by merging with initialData
+    return { ...initialData, ...parsed };
+  } catch (e) {
+    console.error('DataService: Error loading from localStorage, falling back to initial data', e);
     return initialData;
   }
-  return JSON.parse(stored);
 };
 
 const saveDb = (data: any) => {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {
+      console.error('DataService: Error saving to localStorage', e);
+    }
   }
 };
 
 export const dataService = {
+  // Reset
+  resetData: async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialData));
+      return initialData;
+    }
+    return initialData;
+  },
   // Products
   getProducts: async () => getDb().products,
   addProduct: async (product: any) => {
@@ -111,6 +131,16 @@ export const dataService = {
 
   // Orders
   getOrders: async () => getDb().orders,
+  updateOrder: async (id: string, order: any) => {
+    const db = getDb();
+    const index = db.orders.findIndex((o: any) => o.id === id);
+    if (index !== -1) {
+      db.orders[index] = { ...db.orders[index], ...order, id };
+      saveDb(db);
+      return db.orders[index];
+    }
+    throw new Error('Order not found');
+  },
 
   // Staff
   getStaff: async () => getDb().staff,
