@@ -20,6 +20,17 @@ export default function Payouts() {
     toast.success('Downloading payout statement...');
   };
 
+  const handleEarlyPayout = () => {
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+      {
+        loading: 'Processing early payout request...',
+        success: 'Early payout of PKR 12,500 initiated! Funds will arrive in 2-4 hours.',
+        error: 'Failed to initiate early payout. Please try again later.',
+      }
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -27,10 +38,16 @@ export default function Payouts() {
           <h1 className="text-2xl font-bold tracking-tight">Payout Management</h1>
           <p className="text-muted-foreground">Track your earnings and settlements.</p>
         </div>
-        <Button onClick={handleDownload} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Download Statement
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleEarlyPayout} className="bg-orange-600 hover:bg-orange-700">
+            <Wallet className="w-4 h-4 mr-2" />
+            Request Early Payout
+          </Button>
+          <Button onClick={handleDownload} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Download Statement
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">

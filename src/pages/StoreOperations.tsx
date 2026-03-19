@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src
 import { Button } from "@/src/components/ui/Button";
 import { Clock, MapPin, Power, Save, CreditCard } from "lucide-react";
 import { dataService } from "../services/dataService";
+import toast from "react-hot-toast";
 
 interface OperationsData {
   isOpen: boolean;
@@ -16,6 +17,10 @@ interface OperationsData {
 export function StoreOperations() {
   const [operations, setOperations] = useState<OperationsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  
+  const [minOrder, setMinOrder] = useState<string>("");
+  const [radius, setRadius] = useState<string>("");
 
   useEffect(() => {
     fetchOperations();
@@ -25,6 +30,8 @@ export function StoreOperations() {
     try {
       const data = await dataService.getOperations();
       setOperations(data);
+      setMinOrder(data.minOrderValue.toString());
+      setRadius(data.deliveryRadius.toString());
     } catch (error) {
       console.error('Error fetching operations:', error);
     } finally {
@@ -32,14 +39,57 @@ export function StoreOperations() {
     }
   };
 
-  const updateOperations = async (updates: Partial<OperationsData>) => {
+  const updateOperations = async (updates: Partial<OperationsData>, silent = false) => {
     if (!operations) return;
     const newOps = { ...operations, ...updates };
     setOperations(newOps);
     try {
       await dataService.updateOperations(newOps);
+      if (!silent) {
+        toast.success('Settings updated');
+      }
     } catch (error) {
       console.error('Error updating operations:', error);
+      toast.error('Failed to update settings');
+    }
+  };
+
+  const handleSaveDeliverySettings = async () => {
+    if (!operations) return;
+    setSaving(true);
+    try {
+      const updatedOps = {
+        ...operations,
+        minOrderValue: Number(minOrder),
+        deliveryRadius: Number(radius)
+      };
+      await dataService.updateOperations(updatedOps);
+      setOperations(updatedOps);
+      toast.success('Delivery settings saved successfully');
+    } catch (error) {
+      toast.error('Failed to save delivery settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      if (operations) {
+        const finalOps = {
+          ...operations,
+          minOrderValue: Number(minOrder),
+          deliveryRadius: Number(radius)
+        };
+        await dataService.updateOperations(finalOps);
+        setOperations(finalOps);
+        toast.success('All changes saved successfully');
+      }
+    } catch (error) {
+      toast.error('Failed to save changes');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -98,15 +148,25 @@ export function StoreOperations() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Minimum Order Value (Rs.)</label>
-              <input type="number" value={operations.minOrderValue} onChange={(e) => updateOperations({ minOrderValue: Number(e.target.value) })} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <input 
+                type="number" 
+                value={minOrder} 
+                onChange={(e) => setMinOrder(e.target.value)} 
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
+              />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Delivery Radius (km)</label>
-              <input type="number" value={operations.deliveryRadius} onChange={(e) => updateOperations({ deliveryRadius: Number(e.target.value) })} className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+              <input 
+                type="number" 
+                value={radius} 
+                onChange={(e) => setRadius(e.target.value)} 
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" 
+              />
             </div>
-            <Button className="w-full mt-2">
+            <Button className="w-full mt-2" onClick={handleSaveDeliverySettings} disabled={saving}>
               <Save className="mr-2 h-4 w-4" />
-              Save Delivery Settings
+              {saving ? 'Saving...' : 'Save Delivery Settings'}
             </Button>
           </CardContent>
         </Card>
@@ -170,9 +230,9 @@ export function StoreOperations() {
                 </div>
               ))}
               <div className="flex justify-end pt-4">
-                <Button>
+                <Button onClick={handleSaveAll} disabled={saving}>
                   <Save className="mr-2 h-4 w-4" />
-                  Save Hours
+                  {saving ? 'Saving...' : 'Save Hours'}
                 </Button>
               </div>
             </div>

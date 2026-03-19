@@ -205,6 +205,27 @@ export const dataService = {
 
   // Payments
   getPayments: async () => getDb().transactions,
+  addTransaction: async (transaction: any) => {
+    const db = getDb();
+    const newTrx = { 
+      ...transaction, 
+      id: `TRX-${Math.floor(1000 + Math.random() * 9000)}`,
+      date: new Date().toISOString().split('T')[0]
+    };
+    db.transactions.unshift(newTrx);
+    saveDb(db);
+    return newTrx;
+  },
+  getBalance: async () => {
+    const db = getDb();
+    return db.operations.balance || 345000;
+  },
+  updateBalance: async (newBalance: number) => {
+    const db = getDb();
+    db.operations.balance = newBalance;
+    saveDb(db);
+    return newBalance;
+  },
 
   // Dashboard
   getDashboard: async () => {

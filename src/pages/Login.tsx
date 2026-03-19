@@ -42,7 +42,7 @@ export function Login() {
       }
       navigate('/');
     } else {
-      setError('Invalid credentials. Use password "admin".');
+      setError('Invalid email or password. Please try again.');
     }
   };
 
